@@ -557,3 +557,18 @@ p { color: var(--muted); line-height: 1.75; }
 .sv-loop-card em { color: var(--muted); font-style: normal; line-height: 1.48; }
 @media (max-width: 1280px) { .sv-loop-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 720px) { .sv-loop-grid { grid-template-columns: 1fr; } }
+.record-row .advance-status {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  background: rgba(110,231,249,0.1);
+  cursor: pointer;
+}
+@media (max-width: 860px) {
+  .workspace-header { align-items: stretch; }
+  .header-actions { justify-content: flex-start; }
+  .header-actions .button, .data-board-header button, .record-row .advance-status { width: 100%; }
+  .record-row { overflow-wrap: anywhere; }
+  .module-hero h2 { word-break: break-word; }
+}
