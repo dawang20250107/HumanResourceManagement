@@ -8,11 +8,17 @@ FlexForce HR Cloud 将招聘、人才池、合同电子签、智能排班、工�
 
 ## 当前交付
 
-本仓库当前交付的是一个可直接运行的动态综合 HR SaaS 实战原型，而不是官网。系统聚焦灵活用工与企业 HR 的全产品闭环，并用原生 JavaScript 管理状态、记录流转、审计日志、弹窗抽屉和跨模块联动：
+本仓库当前交付的是 **Vite + React + TypeScript 产品化前端工程**，不再是静态 HTML/app.js demo。首屏即综合 HR SaaS 工作台，聚焦灵活用工与企业 HR 的全产品闭环。
 
-- `index.html`：综合 SaaS 工作台入口，覆盖经营驾驶舱、客户与需求、人才与入职、智能排班、工时履约、薪酬结算、客户对账、合规风控、AI 分析和组织权限。
-- `app.js`：动态工作台交互逻辑，按数据、状态、渲染、事件、工具函数分区，提供模块切换、需求状态流转、跨模块联动、AI 指挥中心、审计日志、指标洞察和推荐动作。
-- `styles.css`：统一的顶级 SaaS 视觉系统，支持深色玻璃拟态、侧边导航、指标卡、流程卡、响应式工作台和移动端适配。
+- `index.html`：Vite 应用入口，挂载 React 工作台。
+- `src/App.tsx`：产品状态编排，管理用工需求、审批状态、排班计划、工时记录、薪酬结算、客户账单与审计日志。
+- `src/components/`：通用产品组件，包括侧边栏、AI 指挥中心、创建需求抽屉。
+- `src/modules/`：核心业务模块工作区，展示需求状态流、AI 匹配、排班/工时/薪酬联动。
+- `src/data/`：前端模拟租户、客户、需求、员工、班次、工时、薪酬和账单数据。
+- `src/types/`：TypeScript 业务类型模型。
+- `src/styles.css`：统一的深色玻璃拟态 SaaS 视觉系统。
+
+当前仍是前端模拟数据版本，所有状态保存在 React state 中；下一阶段需要接入真实 API、数据库和鉴权。
 
 ## 推荐语言栈、数据库与 AI 能力
 
@@ -50,24 +56,27 @@ FlexForce HR Cloud 将招聘、人才池、合同电子签、智能排班、工�
 - **HR Copilot**：面向运营、HRBP、财务和客户成功，提供自然语言查询、报表解读、政策问答和待办生成。
 - **知识库 RAG**：连接员工手册、劳动法规、客户 SLA、合同模板和内部 SOP，输出可追溯答案。
 
-## 本地预览
+## 本地运行
 
 ```bash
-python3 -m http.server 4173
+npm install
+npm run dev
+npm run typecheck
+npm run build
 ```
 
-然后打开 <http://localhost:4173> 体验综合 SaaS 工作台。
+开发预览默认由 Vite 提供；Cloud 环境如果 npm registry 受限，需要在可访问 npm registry 的环境中执行 `npm install`。
 
 
 ## 产品化演进路线
 
-当前为了便于 Cloud 端直接预览，仍保持零构建静态原型。下一阶段建议演进为：
+当前已经完成前端工程化底座。下一阶段建议演进为：
 
-1. **前端**：TypeScript + React + Next.js，拆分模块路由、服务端权限保护、组件库和可测试状态管理。
-2. **后端**：Node.js + NestJS，按客户需求、人才、排班、工时、薪酬、结算、风控、审计拆分领域服务。
-3. **数据库**：PostgreSQL 作为核心交易库，Redis 负责缓存/队列/锁，对象存储保存合同证照，ClickHouse/BigQuery 支撑分析。
+1. **前端**：继续完善 React 组件库、路由、表单校验、可访问性测试和 Playwright 视觉回归。
+2. **后端**：接入 NestJS API，按客户需求、人才、排班、工时、薪酬、结算、风控、审计拆分领域服务。
+3. **数据库**：使用 PostgreSQL + Prisma 承载多租户交易数据，Redis 负责缓存/队列/锁，对象存储保存合同证照。
 4. **AI 与数据**：引入 RAG 知识库、人岗匹配模型、需求预测、异常工时检测、薪酬公平分析和自然语言 BI。
-5. **工程化**：补充单元测试、可访问性测试、Playwright 视觉回归、CI/CD、OpenTelemetry 和多租户权限测试。
+5. **工程化**：补充 CI/CD、OpenTelemetry、多租户权限测试、API contract test 和数据迁移流程。
 
 ## 后续产品化路线
 
