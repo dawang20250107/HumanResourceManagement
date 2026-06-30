@@ -16,10 +16,10 @@ FlexForce HR Cloud 将招聘、人才池、合同电子签、智能排班、工�
 - `src/modules/`：核心业务模块工作区，展示需求状态流、AI 匹配、排班/工时/薪酬联动。
 - `src/data/`：前端模拟租户、客户、需求、员工、班次、工时、薪酬和账单数据。
 - `src/types/`：TypeScript 业务类型模型。
-- `src/api/workforceApi.ts`：前端 API client，可通过 `VITE_API_BASE_URL` 对接 NestJS API 快照与核心写操作。
+- `src/api/workforceApi.ts`：前端 API client，可通过 `VITE_API_BASE_URL` 对接 NestJS API 快照与核心写操作，并将 Prisma 枚举状态规范化为中文产品状态。
 - `src/styles.css`：统一的深色玻璃拟态 SaaS 视觉系统。
 
-当前前端仍以内存模拟数据为主，但已具备 `同步 API 快照` 入口：当 NestJS API 可用时，工作台可读取 `/api/workforce/snapshot` 并将需求、排班、工时、薪酬、账单和审计快照灌入 React state。同步成功后，创建需求、推进状态、生成排班和结算会优先尝试调用 NestJS API；如果 API 不可用，会明确提示并回退到本地模拟状态，便于产品演示不断流。下一阶段需要补齐鉴权、租户隔离、权限控制和完整接口测试。
+当前前端仍以内存模拟数据为主，但已具备 `同步 API 快照` 入口：当 NestJS API 可用时，工作台可读取 `/api/workforce/snapshot` 并将需求、排班、工时、薪酬、账单和审计快照灌入 React state。同步成功后，创建需求、推进状态、生成排班和结算会优先尝试调用 NestJS API；如果 API 不可用，会明确提示并回退到本地模拟状态，便于产品演示不断流。API 返回的 `QUOTING / APPROVAL / SCHEDULING / IN_PROGRESS / COMPLETED` 会在前端规范化为 `待报价 / 待审批 / 待排班 / 履约中 / 已完成`，避免后端枚举直接泄漏到业务 UI。下一阶段需要补齐鉴权、租户隔离、权限控制和完整接口测试。
 
 ## 推荐语言栈、数据库与 AI 能力
 
