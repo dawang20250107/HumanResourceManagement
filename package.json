@@ -6,7 +6,8 @@
     "api:dev": "npm --prefix server run start:dev",
     "api:build": "npm --prefix server run build",
     "prisma:generate": "npm --prefix server run prisma:generate",
-    "prisma:migrate": "npm --prefix server run prisma:migrate"
+    "prisma:migrate": "npm --prefix server run prisma:migrate",
+    "prisma:seed": "npm --prefix server run prisma:seed"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { clients, initialAudit, initialDemands, initialInvoices, initialPayroll, initialShifts, initialTimesheets, workers } from '../data/seed';
+import type { WorkforceSnapshot } from '../api/workforceApi';
 import type { ApprovalStatus, AuditEvent, Demand, Invoice, ModuleKey, PayrollBatch, Shift, Timesheet } from '../types';
 
 export interface CommandAction { label: string; module: ModuleKey; effect: string; }
@@ -19,8 +20,23 @@ export function useWorkforceState(initialModule: ModuleKey = 'overview') {
     setAudit(events => [{ id: crypto.randomUUID(), at: new Date().toLocaleTimeString('zh-CN', { hour12: false }), message, module }, ...events]);
   }
 
-  function nextStatus(status: ApprovalStatus): ApprovalStatus {
-    return statusFlow[Math.min(statusFlow.indexOf(status) + 1, statusFlow.length - 1)];
+  function hydrateSnapshot(snapshot: WorkforceSnapshot) {
+    setDemands(snapshot.demands.length ? snapshot.demands : initialDemands);
+    setShifts(snapshot.shifts.length ? snapshot.shifts : initialShifts);
+    setTimesheets(snapshot.timesheets.length ? snapshot.timesheets : initialTimesheets);
+    setPayroll(snapshot.payroll.length ? snapshot.payroll : initialPayroll);
+    setInvoices(snapshot.invoices.length ? snapshot.invoices : initialInvoices);
+    setAudit(snapshot.audit.length ? snapshot.audit : initialAudit);
+    setActiveModule('overview');
+  }
+
+  function nextStatus(status: string): ApprovalStatus {
+    if (status === 'QUOTING') return '待审批';
+    if (status === 'APPROVAL') return '待排班';
+    if (status === 'SCHEDULING') return '履约中';
+    if (status === 'IN_PROGRESS') return '已完成';
+    const current = statusFlow.indexOf(status as ApprovalStatus);
+    return statusFlow[Math.min(Math.max(current, 0) + 1, statusFlow.length - 1)];
   }
 
   function advanceDemand(id: string) {
@@ -37,8 +53,9 @@ export function useWorkforceState(initialModule: ModuleKey = 'overview') {
   function scheduleDemand(id: string) {
     const demand = demands.find(item => item.id === id);
     if (!demand) return;
-    setShifts(list => [{ id: crypto.randomUUID(), demandId: id, name: `${demand.role} 自动排班`, window: '20:00-02:00', coverage: 88, status: '已发布' }, ...list]);
-    setTimesheets(list => [{ id: crypto.randomUUID(), shiftId: id, workerId: workers[0].id, hours: 8, status: '待确认' }, ...list]);
+    const shiftId = crypto.randomUUID();
+    setShifts(list => [{ id: shiftId, demandId: id, name: `${demand.role} 自动排班`, window: '20:00-02:00', coverage: 88, status: '已发布' }, ...list]);
+    setTimesheets(list => [{ id: crypto.randomUUID(), shiftId, workerId: workers[0].id, hours: 8, status: '待确认' }, ...list]);
     setDemands(list => list.map(item => item.id === id ? { ...item, status: '履约中' } : item));
     setActiveModule('time');
     addAudit(`为 ${demand.title} 生成排班与工时`, 'schedule');
@@ -68,5 +85,5 @@ export function useWorkforceState(initialModule: ModuleKey = 'overview') {
     addAudit(`AI 指挥中心执行：${command.label}。${command.effect}`, command.module);
   }
 
-  return { activeModule, setActiveModule, demands, shifts, timesheets, payroll, invoices, audit, advanceDemand, approveDemand, scheduleDemand, settlePayroll, createDemand, runCommand };
+  return { activeModule, setActiveModule, demands, shifts, timesheets, payroll, invoices, audit, hydrateSnapshot, advanceDemand, approveDemand, scheduleDemand, settlePayroll, createDemand, runCommand, addAudit };
 }

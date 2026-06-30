@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { workforceApi } from './api/workforceApi';
 import { AuditPanel } from './components/AuditPanel';
 import { Command, CommandCenter } from './components/CommandCenter';
 import { DemandDrawer, DemandFormValue } from './components/DemandDrawer';
@@ -16,10 +17,14 @@ const commands: Command[] = [
   { label: '查看跨区域用工风险', module: 'risk', effect: '已定位到合规风控模块。' }
 ];
 
+type ApiSyncState = 'idle' | 'syncing' | 'synced' | 'failed';
+
 export default function App() {
   const workforce = useWorkforceState();
   const [commandOpen, setCommandOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [apiSync, setApiSync] = useState<ApiSyncState>('idle');
+  const [apiMessage, setApiMessage] = useState('当前使用前端模拟数据，可连接 NestJS API 快照。');
   const activeConfig = useMemo(() => modules.find(item => item.key === workforce.activeModule) ?? modules[0], [workforce.activeModule]);
 
   useEffect(() => {
@@ -40,5 +45,21 @@ export default function App() {
     setCommandOpen(false);
   }
 
-  return <div className="app-shell"><Sidebar modules={modules} active={workforce.activeModule} onSelect={workforce.setActiveModule} /><main className="workspace"><header className="workspace-header"><div><p className="eyebrow">{tenant.name} · {tenant.plan}</p><h1>灵活用工与企业 HR 的产品化 SaaS 工作台</h1><p>从需求、审批、排班、履约、薪酬、对账到风控审计，使用 React state 演示真实业务数据流。</p></div><div className="header-actions"><button className="button secondary" onClick={() => setCommandOpen(true)}>AI 指挥中心</button><button className="button primary" onClick={() => setDrawerOpen(true)}>创建用工需求</button></div></header><ExecutiveGrid clients={clients} demands={workforce.demands} shifts={workforce.shifts} audit={workforce.audit} /><ModuleWorkspace module={activeConfig} demands={workforce.demands} workers={workers} shifts={workforce.shifts} timesheets={workforce.timesheets} payroll={workforce.payroll} onAdvance={workforce.advanceDemand} onApprove={workforce.approveDemand} onSchedule={workforce.scheduleDemand} onSettle={workforce.settlePayroll} /><AuditPanel audit={workforce.audit} /><CommandCenter open={commandOpen} commands={commands} onRun={runCommand} onClose={() => setCommandOpen(false)} /><DemandDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onCreate={createDemand} /></main></div>;
+  async function syncApiSnapshot() {
+    setApiSync('syncing');
+    setApiMessage('正在读取 NestJS /api/workforce/snapshot ...');
+    try {
+      const snapshot = await workforceApi.snapshot();
+      workforce.hydrateSnapshot(snapshot);
+      workforce.addAudit('已从 NestJS API 同步工作台快照', 'admin');
+      setApiSync('synced');
+      setApiMessage(`API 快照同步完成：${snapshot.demands.length} 个需求，${snapshot.shifts.length} 个班次。`);
+    } catch (error) {
+      setApiSync('failed');
+      setApiMessage(error instanceof Error ? `API 暂不可用：${error.message}` : 'API 暂不可用：未知错误');
+      workforce.addAudit('API 快照同步失败，继续使用前端模拟数据', 'admin');
+    }
+  }
+
+  return <div className="app-shell"><Sidebar modules={modules} active={workforce.activeModule} onSelect={workforce.setActiveModule} /><main className="workspace"><header className="workspace-header"><div><p className="eyebrow">{tenant.name} · {tenant.plan}</p><h1>灵活用工与企业 HR 的产品化 SaaS 工作台</h1><p>从需求、审批、排班、履约、薪酬、对账到风控审计，已具备前端状态流与 NestJS API 对接入口。</p><div className={`api-sync api-sync-${apiSync}`} role="status" aria-live="polite"><span>{apiMessage}</span><button className="button ghost" type="button" onClick={syncApiSnapshot} disabled={apiSync === 'syncing'}>{apiSync === 'syncing' ? '同步中...' : '同步 API 快照'}</button></div></div><div className="header-actions"><button className="button secondary" onClick={() => setCommandOpen(true)} aria-expanded={commandOpen}>AI 指挥中心</button><button className="button primary" onClick={() => setDrawerOpen(true)} aria-expanded={drawerOpen}>创建用工需求</button></div></header><ExecutiveGrid clients={clients} demands={workforce.demands} shifts={workforce.shifts} audit={workforce.audit} /><ModuleWorkspace module={activeConfig} demands={workforce.demands} workers={workers} shifts={workforce.shifts} timesheets={workforce.timesheets} payroll={workforce.payroll} onAdvance={workforce.advanceDemand} onApprove={workforce.approveDemand} onSchedule={workforce.scheduleDemand} onSettle={workforce.settlePayroll} /><AuditPanel audit={workforce.audit} /><CommandCenter open={commandOpen} commands={commands} onRun={runCommand} onClose={() => setCommandOpen(false)} /><DemandDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onCreate={createDemand} /></main></div>;
 }

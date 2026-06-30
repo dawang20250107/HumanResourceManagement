@@ -1,17 +1,38 @@
-import type { Demand } from '../types';
+import type { AuditEvent, Client, Demand, Invoice, PayrollBatch, Shift, Tenant, Timesheet, Worker } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api';
+export interface WorkforceSnapshot {
+  tenant: Tenant | null;
+  clients: Client[];
+  demands: Demand[];
+  workers: Worker[];
+  shifts: Shift[];
+  timesheets: Timesheet[];
+  payroll: PayrollBatch[];
+  invoices: Invoice[];
+  audit: AuditEvent[];
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, { headers: { 'Content-Type': 'application/json' }, ...init });
-  if (!response.ok) throw new Error(`API ${response.status}: ${response.statusText}`);
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    ...init
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `API request failed with ${response.status}`);
+  }
+
   return response.json() as Promise<T>;
 }
 
 export const workforceApi = {
-  snapshot: () => request('/workforce/snapshot'),
-  createDemand: (demand: Omit<Demand, 'id' | 'status'>) => request<Demand>('/workforce/demands', { method: 'POST', body: JSON.stringify(demand) }),
+  snapshot: () => request<WorkforceSnapshot>('/workforce/snapshot'),
+  createDemand: (payload: { clientName?: string; title: string; role: string; city: string; headcount: number; budgetPerHour: number }) =>
+    request<Demand>('/workforce/demands', { method: 'POST', body: JSON.stringify(payload) }),
   advanceDemand: (id: string) => request<Demand>(`/workforce/demands/${id}/advance`, { method: 'POST' }),
-  scheduleDemand: (id: string) => request(`/workforce/demands/${id}/schedule`, { method: 'POST' }),
-  settle: () => request('/workforce/settlements', { method: 'POST' })
+  scheduleDemand: (id: string) => request<Shift>(`/workforce/demands/${id}/schedule`, { method: 'POST', body: JSON.stringify({}) }),
+  settle: () => request<{ batch: PayrollBatch; invoice: Invoice }>('/workforce/settlements', { method: 'POST', body: JSON.stringify({}) })
 };
