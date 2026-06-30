@@ -1,0 +1,221 @@
+// FlexForce HR Cloud — data model
+// PostgreSQL via Prisma. Reference/config tables are seeded from
+// @flexforce/shared; Demand and AuditLog are live transactional entities.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Multi-tenant organisation root.
+model Tenant {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  region    String
+  createdAt DateTime   @default(now())
+  clients   Client[]
+  demands   Demand[]
+  audits    AuditLog[]
+}
+
+/// A workspace module (经营驾驶舱, 客户与需求, ...).
+model Module {
+  key         String         @id
+  title       String
+  intent      String
+  description String
+  order       Int
+  metrics     Metric[]
+  actions     ModuleAction[]
+  pipeline    PipelineStep[]
+  records     DemoRecord[]
+}
+
+model Metric {
+  id        String @id @default(cuid())
+  module    Module @relation(fields: [moduleKey], references: [key], onDelete: Cascade)
+  moduleKey String
+  label     String
+  value     String
+  delta     String
+  detail    String
+  order     Int
+
+  @@index([moduleKey])
+}
+
+model ModuleAction {
+  id        String @id @default(cuid())
+  module    Module @relation(fields: [moduleKey], references: [key], onDelete: Cascade)
+  moduleKey String
+  label     String
+  order     Int
+
+  @@index([moduleKey])
+}
+
+model PipelineStep {
+  id        String @id @default(cuid())
+  module    Module @relation(fields: [moduleKey], references: [key], onDelete: Cascade)
+  moduleKey String
+  label     String
+  order     Int
+
+  @@index([moduleKey])
+}
+
+/// Sample rows shown in a module's data work area.
+model DemoRecord {
+  id        String @id
+  module    Module @relation(fields: [moduleKey], references: [key], onDelete: Cascade)
+  moduleKey String
+  name      String
+  value     String
+  status    String
+  order     Int
+
+  @@index([moduleKey])
+}
+
+/// Customer account (seeded from demand records).
+model Client {
+  id        String   @id @default(cuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  String
+  name      String
+  tier      String   @default("A")
+  city      String
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+}
+
+/// Live flexible-staffing demand created from the workspace.
+model Demand {
+  id        String   @id @default(cuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  String
+  client    String
+  role      String
+  headcount Int
+  city      String
+  status    String   @default("待排班")
+  slaRisk   String   @default("低")
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+}
+
+/// Append-only audit trail for AI suggestions, dispatches and sensitive ops.
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+}
+
+/* ── Workspace reference data (presentation config) ── */
+
+model Scenario {
+  id    String @id
+  label String
+  need  String
+  sla   String
+  order Int
+}
+
+model MatchRow {
+  id     String @id @default(cuid())
+  name   String
+  role   String
+  score  Int
+  reason String
+  order  Int
+}
+
+model DeliverySlot {
+  id       String @id @default(cuid())
+  window   String
+  label    String
+  coverage Int
+  note     String
+  order    Int
+}
+
+model ComplianceRule {
+  id    String @id @default(cuid())
+  text  String
+  order Int
+}
+
+model ApprovalStep {
+  id    String @id @default(cuid())
+  label String
+  order Int
+}
+
+model EmployeeProfile {
+  id         String @id @default(cuid())
+  code       String @unique
+  name       String
+  role       String
+  matchScore Int
+  note       String
+  order      Int
+}
+
+model LoopCard {
+  id     String @id @default(cuid())
+  group  String
+  code   String
+  title  String
+  metric String
+  note   String
+  order  Int
+
+  @@index([group])
+}
+
+model RiskHeatCell {
+  id    String @id @default(cuid())
+  label String
+  level String
+  count Int
+  order Int
+}
+
+model IntegrationStatus {
+  id     String @id @default(cuid())
+  name   String
+  uptime String
+  status String
+  order  Int
+}
+
+model ExecutiveMetric {
+  id    String @id @default(cuid())
+  label String
+  value String
+  delta String
+  order Int
+}
+
+model CommandSuggestion {
+  id    String @id @default(cuid())
+  text  String
+  order Int
+}
+
+/// Singleton-ish workspace settings.
+model WorkspaceSetting {
+  id                    String @id @default("default")
+  automationSavingsHours Int
+}

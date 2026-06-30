@@ -1,68 +1,119 @@
 # FlexForce HR Cloud
 
-对标硅谷顶尖 SaaS 的人力资源管理系统概念版，重点覆盖灵活用工、人力资源服务商与高波峰企业的一体化运营场景。
+对标硅谷顶尖 SaaS 的人力资源管理系统,聚焦**灵活用工**、人力资源服务商与高波峰企业的一体化运营。本仓库已从早期的纯前端概念稿,**重构为可运行的真实全栈技术栈**(Next.js + NestJS + PostgreSQL,pnpm monorepo)。
 
-## 核心定位
+> 旧的单页概念稿保留在 [`legacy/`](./legacy) 目录,便于对照设计与文案。
 
-FlexForce HR Cloud 将招聘、人才池、合同电子签、智能排班、工时采集、薪酬结算、客户对账、合规风控与经营分析整合到一个现代化 SaaS 平台中，帮助企业提升交付效率并降低用工风险。
+## 架构总览
 
-## 当前交付
-
-本仓库当前交付的是一个可直接运行的综合 HR SaaS 单页系统，而不是官网。系统聚焦灵活用工与企业 HR 的全产品闭环：
-
-- `index.html`：综合 SaaS 工作台入口，覆盖经营驾驶舱、客户与需求、人才与入职、智能排班、工时履约、薪酬结算、客户对账、合规风控、AI 分析和组织权限。
-- `app.js`：工作台交互逻辑，提供模块切换、场景切换、指标渲染、AI Copilot 建议、流程轨道和推荐动作。
-- `styles.css`：统一的顶级 SaaS 视觉系统，支持深色玻璃拟态、侧边导航、指标卡、流程卡、响应式工作台和移动端适配。
-
-## 推荐语言栈、数据库与 AI 能力
-
-### 语言栈
-
-- **前端**：TypeScript、React、Next.js、Tailwind CSS，用于管理后台、客户门户和员工自助端。
-- **后端**：TypeScript、Node.js、NestJS，按招聘、员工、合同、排班、工时、薪酬、结算、权限等业务域模块化拆分。
-- **移动端**：React Native 或 Flutter，用于员工抢单、打卡、换班、资料提交和消息通知。
-- **基础设施**：Docker、Kubernetes、OpenTelemetry、CI/CD，支持公有云、专有云与私有化部署。
-
-### 为什么推荐这套语言栈
-
-- **统一 TypeScript 降低协作成本**：HR SaaS 需要快速迭代大量表单、审批流、权限配置和业务规则。前后端统一 TypeScript 后，类型、DTO、API Schema 和校验逻辑可以复用，减少沟通与联调成本。
-- **React / Next.js 适合复杂 B2B SaaS 控制台**：招聘漏斗、排班日历、工时表、薪酬账单、权限矩阵和分析仪表盘都属于高交互后台场景，React 生态成熟；Next.js 兼顾管理端路由、服务端渲染、权限保护页面和多租户工作台性能优化。
-- **NestJS 更适合企业级模块化后端**：它天然支持模块、依赖注入、Guard、Interceptor、Pipe 和 OpenAPI，便于拆分招聘、合同、排班、薪酬、结算、审计等领域服务，也方便未来演进到微服务或事件驱动架构。
-- **Node.js 适合 I/O 密集型 SaaS 集成**：灵活用工系统会频繁对接电子签、短信、IM、财务、税务、考勤设备、客户系统和 Webhook，Node.js 对 API 网关、异步任务、实时通知和连接器开发效率较高。
-- **移动端选择 React Native / Flutter 是为了一套业务多端复用**：员工抢单、打卡、换班、证照上传、通知确认等移动场景变化快，跨平台框架能降低 iOS/Android 双端维护成本。
-- **该组合利于招聘与长期维护**：TypeScript、React、Node.js、PostgreSQL 都有成熟社区和人才供给，适合从 MVP 逐步扩展到多租户企业级平台。
-
-### 数据库与数据组件
-
-- **PostgreSQL**：核心交易库，承载多租户组织、员工、合同、班次、工时、薪酬、账单和审计数据。
-- **Redis**：缓存、分布式锁、排班抢单、验证码、实时状态和轻量队列。
-- **对象存储（S3 兼容）**：保存合同、证照、发票、工资单、导入导出文件和审计附件。
-- **Elasticsearch / OpenSearch**：用于候选人、员工、合同、客户、岗位和操作日志的全文检索。
-- **ClickHouse / BigQuery**：用于经营分析、用工预测、毛利分析和大规模工时明细查询。
-- **pgvector / 专用向量数据库**：用于简历、岗位、制度、合同模板和知识库的语义检索。
-
-### AI 能力
-
-- **简历与证照解析**：自动抽取姓名、技能、经验、证照、可上岗时间和风险字段。
-- **人岗匹配与排班推荐**：结合技能、距离、偏好、历史到岗率、成本、法规约束和客户 SLA 生成推荐。
-- **需求预测**：基于历史订单、季节性、城市供给和客户波动预测未来人员缺口。
-- **异常工时与合规风控**：识别超时、重复打卡、跨区域异常、证照过期、合同缺失和薪税规则冲突。
-- **HR Copilot**：面向运营、HRBP、财务和客户成功，提供自然语言查询、报表解读、政策问答和待办生成。
-- **知识库 RAG**：连接员工手册、劳动法规、客户 SLA、合同模板和内部 SOP，输出可追溯答案。
-
-## 本地预览
-
-```bash
-python3 -m http.server 4173
+```
+flexforce-hr-cloud/            # pnpm workspace 根
+├── apps/
+│   ├── web/                   # @flexforce/web  — Next.js 14 (App Router) 前端工作台
+│   └── api/                   # @flexforce/api  — NestJS + Prisma 后端服务
+├── packages/
+│   └── shared/                # @flexforce/shared — 前后端共享的类型契约与种子数据(单一数据源)
+├── legacy/                    # 早期纯前端概念稿(index.html / app.js / styles.css)
+├── docker-compose.yml         # 本地 PostgreSQL + Redis
+└── pnpm-workspace.yaml
 ```
 
-然后打开 <http://localhost:4173> 体验综合 SaaS 工作台。
+**契约优先**:所有领域类型、API DTO 与演示数据都集中在 `@flexforce/shared`。后端用它给数据库播种,前端用它做类型与降级兜底,因此**前后端的数据形状永远一致**。
+
+### 技术栈
+
+| 层 | 选型 |
+| --- | --- |
+| 前端 | TypeScript · Next.js 14(App Router)· Tailwind CSS · Framer Motion · TanStack Query |
+| 后端 | TypeScript · NestJS 10 · Prisma 6 · class-validator · Swagger/OpenAPI |
+| 数据库 | PostgreSQL 16(Prisma 迁移)· Redis(为缓存/队列预留) |
+| 工程 | pnpm workspaces · Docker Compose |
+
+### 功能模块(10 个)
+
+经营驾驶舱 · 客户与需求 · 人才与入职 · 智能排班 · 工时履约 · 薪酬结算 · 客户对账 · 合规风控 · AI 分析 · 组织权限。
+
+每个模块由数据库驱动,统一渲染:模块简介 + AI Copilot 建议 + 流程轨道 + 指标卡(数字滚动动画 + 根因下钻)+ 推荐动作(可勾选)+ 实战数据工作区(批量派发)+ AI 人岗匹配矩阵 + 履约计划编排器 + 5 个核心 Loop(员工 360 / 审批流 / **实时薪酬沙盘** / 风险热力图 / 集成健康)+ 高级与企业级能力卡 + **实时审计时间线**。
+
+顶层还提供:高峰场景切换、**AI 指挥中心命令面板**、**创建用工需求抽屉**(真实写库 + SLA 风险推断)、指标洞察抽屉、操作 Toast。所有交互均带 Framer Motion 微动效(共享元素高亮、入场错峰、抽屉弹簧、动画进度条等)。
+
+## 快速开始
+
+### 前置依赖
+
+- Node.js ≥ 20、pnpm ≥ 10
+- Docker(用于本地 PostgreSQL),或一个可用的 PostgreSQL 16 实例
+
+### 1. 安装依赖
+
+```bash
+pnpm install
+pnpm --filter @flexforce/shared build      # 构建共享契约包
+```
+
+### 2. 启动数据库并初始化
+
+```bash
+cp .env.example apps/api/.env              # 配置 DATABASE_URL 等
+pnpm db:up                                 # docker compose 起 postgres + redis
+pnpm --filter @flexforce/api prisma:generate
+pnpm db:migrate                            # 应用迁移
+pnpm db:seed                               # 写入 10 个模块 + 工作台种子数据
+```
+
+### 3. 启动前后端
+
+```bash
+pnpm dev          # 同时启动 api(:4000)与 web(:3000)
+# 或分别启动
+pnpm dev:api      # NestJS  → http://localhost:4000/api  (Swagger: /api/docs)
+pnpm dev:web      # Next.js → http://localhost:3000
+```
+
+打开 <http://localhost:3000> 体验综合 SaaS 工作台。若后端未启动,前端会自动降级到 `@flexforce/shared` 的种子快照渲染,保证页面始终可用。
+
+## 常用脚本(根目录)
+
+| 命令 | 作用 |
+| --- | --- |
+| `pnpm dev` | 并行启动 api + web |
+| `pnpm build` | 构建 shared → api → web |
+| `pnpm typecheck` | 全仓类型检查 |
+| `pnpm db:up` / `db:down` | 启停本地 PostgreSQL + Redis |
+| `pnpm db:migrate` / `db:seed` / `db:reset` | 迁移 / 播种 / 重置数据库 |
+
+## API 概览
+
+后端统一前缀 `/api`,Swagger 文档位于 `/api/docs`。
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/health` | 存活探针 + 数据库连通性 |
+| GET | `/api/modules` | 模块列表(导航) |
+| GET | `/api/modules/:key` | 单模块完整工作台数据 |
+| GET | `/api/workspace` | 工作台聚合(指标 / 场景 / 矩阵 / Loop / 风险 / 集成…) |
+| GET | `/api/scenarios` | 高峰场景列表 |
+| GET / POST | `/api/audit` | 读取 / 追加审计事件 |
+| GET / POST | `/api/demands` | 列出 / 创建用工需求(写库 + 审计 + SLA 风险推断) |
+| POST | `/api/payroll/estimate` | 薪酬沙盘:时薪 × 工时估算应发 |
+| GET | `/api/command/suggestions?q=` | AI 指挥中心命令建议(可过滤) |
+
+## 数据模型(Prisma)
+
+`Tenant`、`Module`(含 `Metric` / `ModuleAction` / `PipelineStep` / `DemoRecord`)、`Client`、`Demand`、`AuditLog`,以及工作台参考数据表(`Scenario`、`MatchRow`、`DeliverySlot`、`LoopCard`、`RiskHeatCell`、`IntegrationStatus`、`ExecutiveMetric`、`CommandSuggestion` 等)。`Demand` 与 `AuditLog` 为真实事务实体,其余为可播种的展示配置数据。
 
 ## 后续产品化路线
 
-1. 多租户账号、组织、角色与字段级权限。
-2. 员工/候选人/客户/主管多端门户。
-3. 招聘漏斗、人才池、电子签与入职流程编排。
-4. 智能排班、移动打卡、异常工时与审批流。
+1. 多租户鉴权(JWT / SSO)与字段级 RBAC/ABAC。
+2. 员工 / 候选人 / 客户 / 主管多端门户。
+3. 招聘漏斗、电子签与入职流程编排。
+4. 智能排班、移动打卡、异常工时与审批流落库。
 5. 薪酬结算、客户对账、发票、毛利与现金流分析。
-6. API、Webhook、SSO、审计日志与私有化部署能力。
+6. Redis 队列、Webhook、审计导出与私有化部署。
+
+---
+
+### 说明
+
+- 本仓库为概念到工程化的演进版本,种子数据为演示数据,AI 能力以接口/交互形态呈现,尚未接入真实模型。
+- 在受限网络环境中 `pnpm install` 若无法自动下载 Prisma 引擎,可在能联网时执行 `pnpm --filter @flexforce/api prisma:generate` 重试。

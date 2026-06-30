@@ -1,0 +1,37 @@
+{
+  "name": "flexforce-hr-cloud",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FlexForce HR Cloud — full-stack flexible-workforce HR SaaS (Next.js + NestJS + PostgreSQL)",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter @flexforce/shared build && pnpm -r --filter @flexforce/api --filter @flexforce/web build",
+    "dev": "pnpm -r --parallel --filter @flexforce/api --filter @flexforce/web dev",
+    "dev:api": "pnpm --filter @flexforce/api dev",
+    "dev:web": "pnpm --filter @flexforce/web dev",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "db:up": "docker compose up -d postgres redis",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @flexforce/api prisma:migrate",
+    "db:seed": "pnpm --filter @flexforce/api prisma:seed",
+    "db:reset": "pnpm --filter @flexforce/api prisma:reset",
+    "bootstrap": "pnpm install && pnpm --filter @flexforce/shared build && pnpm --filter @flexforce/api prisma:generate"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "@nestjs/core",
+      "@scarf/scarf"
+    ]
+  }
+}
