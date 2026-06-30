@@ -19,7 +19,7 @@ FlexForce HR Cloud 将招聘、人才池、合同电子签、智能排班、工�
 - `src/api/workforceApi.ts`：前端 API client，可通过 `VITE_API_BASE_URL` 对接 NestJS API 快照与核心写操作。
 - `src/styles.css`：统一的深色玻璃拟态 SaaS 视觉系统。
 
-当前前端仍以内存模拟数据为主，但已具备 `同步 API 快照` 入口：当 NestJS API 可用时，工作台可读取 `/api/workforce/snapshot` 并将需求、排班、工时、薪酬、账单和审计快照灌入 React state。下一阶段需要把创建、审批、排班、结算操作从本地模拟逐步切换为 API mutation，并补齐鉴权、租户隔离和权限控制。
+当前前端仍以内存模拟数据为主，但已具备 `同步 API 快照` 入口：当 NestJS API 可用时，工作台可读取 `/api/workforce/snapshot` 并将需求、排班、工时、薪酬、账单和审计快照灌入 React state。同步成功后，创建需求、推进状态、生成排班和结算会优先尝试调用 NestJS API；如果 API 不可用，会明确提示并回退到本地模拟状态，便于产品演示不断流。下一阶段需要补齐鉴权、租户隔离、权限控制和完整接口测试。
 
 ## 推荐语言栈、数据库与 AI 能力
 
@@ -100,8 +100,8 @@ API 可用后，在前端工作台点击 `同步 API 快照` 可把 PostgreSQL �
 
 当前已经完成前端工程化底座。下一阶段建议演进为：
 
-1. **前端**：继续完善 React 组件库、路由、表单校验、可访问性测试和 Playwright 视觉回归。
-2. **后端**：接入 NestJS API，按客户需求、人才、排班、工时、薪酬、结算、风控、审计拆分领域服务。
+1. **前端**：继续拆分模块视图、引入路由、表单校验、API mutation 状态管理、可访问性测试和 Playwright 视觉回归。
+2. **后端**：继续将 NestJS API 从单一 WorkforceService 拆分为客户需求、人才、排班、工时、薪酬、结算、风控、审计等领域服务。
 3. **数据库**：使用 PostgreSQL + Prisma 承载多租户交易数据，Redis 负责缓存/队列/锁，对象存储保存合同证照。
 4. **AI 与数据**：引入 RAG 知识库、人岗匹配模型、需求预测、异常工时检测、薪酬公平分析和自然语言 BI。
 5. **工程化**：补充 CI/CD、OpenTelemetry、多租户权限测试、API contract test 和数据迁移流程。
