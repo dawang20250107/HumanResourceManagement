@@ -19,3 +19,5 @@ declare module '@vitejs/plugin-react' { export default function react(): unknown
 declare namespace JSX { interface IntrinsicElements { [elementName: string]: any } }
 
 declare module '*.css';
+interface ImportMetaEnv { readonly VITE_API_BASE_URL?: string; }
+interface ImportMeta { readonly env: ImportMetaEnv; }

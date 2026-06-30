@@ -68,6 +68,26 @@ npm run build
 开发预览默认由 Vite 提供；Cloud 环境如果 npm registry 受限，需要在可访问 npm registry 的环境中执行 `npm install`。
 
 
+
+## 后端 API / 数据库底座
+
+本仓库已新增 NestJS + PostgreSQL + Prisma API 雏形：
+
+- `server/prisma/schema.prisma`：定义租户、客户、需求、员工、班次、工时、薪酬批次、账单、审计事件等核心模型。
+- `server/src/workforce.controller.ts`：提供 `GET /api/workforce/snapshot`、创建需求、推进需求、生成排班、生成结算批次等接口。
+- `server/src/workforce.service.ts`：封装 Prisma 读写、需求状态流转、排班创建、结算与审计写入。
+- `src/api/workforceApi.ts`：前端 API client，后续可将当前 React state 从模拟数据切换到真实 API。
+
+后端运行计划：
+
+```bash
+npm --prefix server install
+DATABASE_URL=postgresql://user:password@localhost:5432/flexforce npm run prisma:migrate
+npm run api:dev
+```
+
+当前 Cloud 环境 npm registry 受限时，后端依赖安装需要在可访问 npm registry 的环境执行。
+
 ## 产品化演进路线
 
 当前已经完成前端工程化底座。下一阶段建议演进为：

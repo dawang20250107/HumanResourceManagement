@@ -2,7 +2,11 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b --noEmit && node scripts/build.mjs",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "api:dev": "npm --prefix server run start:dev",
+    "api:build": "npm --prefix server run build",
+    "prisma:generate": "npm --prefix server run prisma:generate",
+    "prisma:migrate": "npm --prefix server run prisma:migrate"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
