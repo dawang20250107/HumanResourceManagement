@@ -114,9 +114,18 @@ export class WorkforceService {
   }
 
   private async audit(module: string, message: string) {
-    const tenant = await this.prisma.tenant.findFirst();
+    const tenant = await this.ensureTenant();
     await this.prisma.auditEvent.create({
-      data: { tenantId: tenant?.id ?? DEFAULT_TENANT_ID, module, message }
+      data: { tenantId: tenant.id, module, message }
+    });
+  }
+
+  private async ensureTenant() {
+    const tenant = await this.prisma.tenant.findFirst();
+    if (tenant) return tenant;
+
+    return this.prisma.tenant.create({
+      data: { id: DEFAULT_TENANT_ID, name: 'FlexForce Enterprise', plan: 'Enterprise', region: 'CN-East' }
     });
   }
 }

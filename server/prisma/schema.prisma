@@ -1,14 +1,126 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
 
-enum ApprovalStatus { QUOTING APPROVAL SCHEDULING IN_PROGRESS COMPLETED }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
-model Tenant { id String @id @default(cuid()) name String plan String region String clients Client[] auditEvents AuditEvent[] createdAt DateTime @default(now()) }
-model Client { id String @id @default(cuid()) tenantId String tenant Tenant @relation(fields: [tenantId], references: [id]) name String industry String sla Float demands Demand[] invoices Invoice[] }
-model Demand { id String @id @default(cuid()) clientId String client Client @relation(fields: [clientId], references: [id]) title String role String city String headcount Int budgetPerHour Float status ApprovalStatus @default(QUOTING) shifts Shift[] createdAt DateTime @default(now()) }
-model Worker { id String @id @default(cuid()) name String city String skills String[] matchScore Int status String timesheets Timesheet[] }
-model Shift { id String @id @default(cuid()) demandId String demand Demand @relation(fields: [demandId], references: [id]) name String window String coverage Int status String timesheets Timesheet[] }
-model Timesheet { id String @id @default(cuid()) shiftId String shift Shift @relation(fields: [shiftId], references: [id]) workerId String worker Worker @relation(fields: [workerId], references: [id]) hours Float status String }
-model PayrollBatch { id String @id @default(cuid()) title String amount Float status String createdAt DateTime @default(now()) }
-model Invoice { id String @id @default(cuid()) clientId String client Client @relation(fields: [clientId], references: [id]) amount Float status String createdAt DateTime @default(now()) }
-model AuditEvent { id String @id @default(cuid()) tenantId String tenant Tenant @relation(fields: [tenantId], references: [id]) module String message String createdAt DateTime @default(now()) }
+enum ApprovalStatus {
+  QUOTING
+  APPROVAL
+  SCHEDULING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Tenant {
+  id          String       @id @default(cuid())
+  name        String
+  plan        String
+  region      String
+  clients     Client[]
+  auditEvents AuditEvent[]
+  createdAt   DateTime     @default(now())
+}
+
+model Client {
+  id       String    @id @default(cuid())
+  tenantId String
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  name     String
+  industry String
+  sla      Float
+  demands  Demand[]
+  invoices Invoice[]
+
+  @@index([tenantId])
+}
+
+model Demand {
+  id            String         @id @default(cuid())
+  clientId      String
+  client        Client         @relation(fields: [clientId], references: [id])
+  title         String
+  role          String
+  city          String
+  headcount     Int
+  budgetPerHour Float
+  status        ApprovalStatus @default(QUOTING)
+  shifts        Shift[]
+  createdAt     DateTime       @default(now())
+
+  @@index([clientId, status])
+  @@index([city, role])
+}
+
+model Worker {
+  id         String      @id @default(cuid())
+  name       String
+  city       String
+  skills     String[]
+  matchScore Int
+  status     String
+  timesheets Timesheet[]
+
+  @@index([city, status])
+}
+
+model Shift {
+  id         String      @id @default(cuid())
+  demandId   String
+  demand     Demand      @relation(fields: [demandId], references: [id])
+  name       String
+  window     String
+  coverage   Int
+  status     String
+  timesheets Timesheet[]
+
+  @@index([demandId, status])
+}
+
+model Timesheet {
+  id       String @id @default(cuid())
+  shiftId  String
+  shift    Shift  @relation(fields: [shiftId], references: [id])
+  workerId String
+  worker   Worker @relation(fields: [workerId], references: [id])
+  hours    Float
+  status   String
+
+  @@index([shiftId, status])
+  @@index([workerId])
+}
+
+model PayrollBatch {
+  id        String   @id @default(cuid())
+  title     String
+  amount    Float
+  status    String
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt])
+}
+
+model Invoice {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+  amount    Float
+  status    String
+  createdAt DateTime @default(now())
+
+  @@index([clientId, status])
+}
+
+model AuditEvent {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  module    String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, module, createdAt])
+}

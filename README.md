@@ -81,10 +81,13 @@ npm run build
 - `server/src/workforce.dto.ts`：定义创建需求、排班、结算的基础 DTO，避免 Controller 直接吞裸对象。
 - `server/src/status-flow.ts`：统一维护需求状态流，后续可升级为状态机/审批引擎。
 - `server/prisma/seed.ts`：提供本地 PostgreSQL 初始化数据，便于产品、前端和后端联调。
+- `.env.example` / `server/.env.example`：声明前后端联调所需的 `VITE_API_BASE_URL`、`DATABASE_URL` 和 `PORT`。
 
 后端运行计划：
 
 ```bash
+cp .env.example .env
+cp server/.env.example server/.env
 npm --prefix server install
 DATABASE_URL=postgresql://user:password@localhost:5432/flexforce npm run prisma:migrate
 DATABASE_URL=postgresql://user:password@localhost:5432/flexforce npm run prisma:seed
@@ -102,7 +105,7 @@ API 可用后，在前端工作台点击 `同步 API 快照` 可把 PostgreSQL �
 
 1. **前端**：继续拆分模块视图、引入路由、表单校验、API mutation 状态管理、可访问性测试和 Playwright 视觉回归。
 2. **后端**：继续将 NestJS API 从单一 WorkforceService 拆分为客户需求、人才、排班、工时、薪酬、结算、风控、审计等领域服务。
-3. **数据库**：使用 PostgreSQL + Prisma 承载多租户交易数据，Redis 负责缓存/队列/锁，对象存储保存合同证照。
+3. **数据库**：使用 PostgreSQL + Prisma 承载多租户交易数据，持续补充索引、迁移、seed 和数据权限约束；Redis 负责缓存/队列/锁，对象存储保存合同证照。
 4. **AI 与数据**：引入 RAG 知识库、人岗匹配模型、需求预测、异常工时检测、薪酬公平分析和自然语言 BI。
 5. **工程化**：补充 CI/CD、OpenTelemetry、多租户权限测试、API contract test 和数据迁移流程。
 
