@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlexForce HR Cloud｜综合人力资源 SaaS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="app.js" defer></script>
+</head>
+<body class="app-body">
+  <div class="app-shell">
+    <aside class="app-sidebar" aria-label="FlexForce HR Cloud 产品模块">
+      <a class="brand" href="index.html" aria-label="FlexForce HR Cloud">
+        <span class="brand-mark">F</span>
+        <span>FlexForce HR Cloud</span>
+      </a>
+      <nav class="module-nav" aria-label="工作台导航">
+        <button class="module-tab active" data-module="overview">经营驾驶舱</button>
+        <button class="module-tab" data-module="demand">客户与需求</button>
+        <button class="module-tab" data-module="talent">人才与入职</button>
+        <button class="module-tab" data-module="schedule">智能排班</button>
+        <button class="module-tab" data-module="time">工时履约</button>
+        <button class="module-tab" data-module="payroll">薪酬结算</button>
+        <button class="module-tab" data-module="billing">客户对账</button>
+        <button class="module-tab" data-module="risk">合规风控</button>
+        <button class="module-tab" data-module="analytics">AI 分析</button>
+        <button class="module-tab" data-module="admin">组织权限</button>
+      </nav>
+      <div class="sidebar-card">
+        <span>本月自动化节省</span>
+        <strong>486 小时</strong>
+        <p>来自 AI 匹配、批量入职、工时异常识别、自动对账与合规预警。</p>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="workspace-header">
+        <div>
+          <p class="eyebrow">Enterprise Workforce Operating System</p>
+          <h1>灵活用工与企业 HR 的全产品 SaaS 工作台</h1>
+          <p>统一管理客户需求、人才供给、合同入职、智能排班、工时履约、薪酬结算、客户对账、合规风控、AI 分析和组织权限。</p>
+        </div>
+        <div class="header-actions">
+          <button id="scenarioButton" class="button secondary" type="button">切换高峰场景</button>
+          <button id="commandButton" class="button secondary" type="button">AI 指挥中心</button>
+          <button id="createDemandButton" class="button primary" type="button">创建用工需求</button>
+        </div>
+      </header>
+
+      <section class="executive-grid" aria-label="关键经营指标">
+        <article><span>活跃员工</span><strong>12,480</strong><em>+8.2%</em></article>
+        <article><span>本周履约工时</span><strong>18,426</strong><em>+12.8%</em></article>
+        <article><span>项目毛利率</span><strong>23.6%</strong><em>+2.1%</em></article>
+        <article><span>自动化对账准确率</span><strong>99.9%</strong><em>稳定</em></article>
+      </section>
+
+      <section class="scenario-strip" aria-live="polite">
+        <span id="scenarioLabel">618 电商仓配高峰</span>
+        <strong id="scenarioNeed">缺口 312 人</strong>
+        <span id="scenarioSla">SLA 风险 低</span>
+      </section>
+
+      <section id="moduleContent" class="module-content"></section>
+      <div id="commandOverlay" class="command-overlay" aria-hidden="true">
+        <div class="command-panel" role="dialog" aria-modal="true" aria-label="AI 指挥中心">
+          <div class="command-panel-header">
+            <div>
+              <p class="eyebrow">AI Command Center</p>
+              <h2>跨模块智能指挥中心</h2>
+            </div>
+            <button id="closeCommand" type="button" aria-label="关闭 AI 指挥中心">×</button>
+          </div>
+          <input id="commandInput" type="search" placeholder="输入：补人、排班、结算、风控、对账…" />
+          <div id="commandResults" class="command-results"></div>
+        </div>
+      </div>
+      <div id="createDrawer" class="create-drawer" aria-hidden="true">
+        <form id="demandForm" class="create-panel">
+          <div class="command-panel-header">
+            <div>
+              <p class="eyebrow">Create Demand</p>
+              <h2>新建灵活用工需求</h2>
+            </div>
+            <button id="closeCreate" type="button" aria-label="关闭新建需求">×</button>
+          </div>
+          <label>客户名称<input name="client" required value="盒马华东仓" /></label>
+          <label>岗位类型<input name="role" required value="仓配夜班" /></label>
+          <label>需求人数<input name="count" type="number" min="1" required value="42" /></label>
+          <label>交付城市<input name="city" required value="上海" /></label>
+          <button class="button primary" type="submit">生成需求并进入排班</button>
+          <p id="createResult" class="bulk-status">提交后会写入审计日志并生成 AI 排班建议。</p>
+        </form>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
